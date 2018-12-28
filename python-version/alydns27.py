@@ -11,6 +11,7 @@ import random
 import string
 import json
 from sys import argv
+import sys
 
 
 ACCESS_KEY_ID = '阿里云 access_key_id'
@@ -88,7 +89,7 @@ class AliDns:
         h = hmac.new(hash_bytes, string_to_sign, digestmod=hashlib.sha1)
         signature = base64.encodestring(h.digest()).strip()
         url_param.setdefault('Signature', signature)
-        url = 'https://alidns.aliyuncs.com/?' + urllib.urlencode(url_param)
+        url = 'http://alidns.aliyuncs.com/?' + urllib.urlencode(url_param)
         print(url)
         return AliDns.access_url(url)
 
@@ -160,6 +161,13 @@ if __name__ == '__main__':
 
     print(argv)
     file_name, certbot_domain, acme_challenge, certbot_validation = argv
+    # 子域名生效
+    domain_arr = certbot_domain.split('.')
+    certbot_domain = '.'.join(domain_arr[-2:])
+    sub_domain =  '.'.join(domain_arr[0:-2])
+    if len(sub_domain) > 0:
+        acme_challenge = acme_challenge + '.' + sub_domain
+    # sys.exit()
 
     domain = AliDns(ACCESS_KEY_ID, ACCESS_KEY_SECRET, certbot_domain)
     data = domain.describe_domain_records()
